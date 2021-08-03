@@ -1,7 +1,7 @@
 {
-	"name": "baraja-core/template",
+	"name": "baraja-core/shop-price",
 	"description": "This is a template package.",
-	"homepage": "https://github.com/baraja-core/template",
+	"homepage": "https://github.com/baraja-core/shop-price",
 	"authors": [
 		{
 			"name": "Jan Barášek",
@@ -9,7 +9,10 @@
 		}
 	],
 	"require": {
-		"php": "^8.0"
+		"php": "^8.0",
+		"nette/utils": "^3.0",
+		"baraja-core/localization": "^2.0",
+		"baraja-core/currency-exchange-rate": "^2.0"
 	},
 	"require-dev": {
 		"tracy/tracy": "^2.8",
