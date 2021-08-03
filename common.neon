@@ -1,0 +1,2 @@
+extensions:
+	shopPrice: Baraja\Shop\Price\ShopPriceExtension
