@@ -40,7 +40,7 @@ final class PriceRenderer implements PriceRendererInterface
 		?string $expectedCurrency = null,
 		?string $currentCurrency = null
 	): string {
-		$locale = $locale ?? $this->localization->getLocale();
+		$locale ??= $this->localization->getLocale();
 		$expectedCurrency = $this->currencyResolver->getCurrency($expectedCurrency, $locale);
 		if ($currentCurrency === null) {
 			$currentCurrency = self::LOCALE_CURRENCY[$this->localization->getDefaultLocale()]
@@ -53,9 +53,9 @@ final class PriceRenderer implements PriceRendererInterface
 		}
 
 		$return = number_format($converted, $this->decimals, '.', ' ');
-		if (preg_match('/^(\d*)\.(\d*)$/', $return, $match)) {
+		if (preg_match('/^(\d*)\.(\d*)$/', $return, $match) === 1) {
 			$right = rtrim($match[2], '0');
-			$return = ($match[1] ?: '0') . ($right ? '.' . $right : '');
+			$return = ($match[1] === '' ? '0' : $match[1]) . ($right !== '' ? '.' . $right : '');
 		}
 
 		return $return . '&nbsp;' . $this->renderSymbol($locale, $expectedCurrency);

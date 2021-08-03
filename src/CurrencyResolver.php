@@ -17,7 +17,7 @@ final class CurrencyResolver
 
 	public function getCurrency(?string $expected = null, ?string $locale = null): string
 	{
-		$locale = $locale ?? $this->localization->getLocale();
+		$locale ??= $this->localization->getLocale();
 
 		return $expected
 			?? $this->getSessionValue() // resolve by session
