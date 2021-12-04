@@ -7,6 +7,7 @@ namespace Baraja\Shop\Price;
 
 use Baraja\CurrencyExchangeRate\CurrencyExchangeRateManager;
 use Baraja\Localization\Localization;
+use Baraja\Shop\Context;
 
 final class PriceRenderer implements PriceRendererInterface
 {
@@ -27,7 +28,7 @@ final class PriceRenderer implements PriceRendererInterface
 	public function __construct(
 		private Localization $localization,
 		private CurrencyExchangeRateManager $exchangeRateManager,
-		private CurrencyResolver $currencyResolver,
+		private Context $context,
 		private int $decimals = 2,
 	) {
 	}
@@ -48,7 +49,7 @@ final class PriceRenderer implements PriceRendererInterface
 			$value = $price;
 		}
 		$locale ??= $this->localization->getLocale();
-		$expectedCurrency = $this->currencyResolver->getCurrency($expectedCurrency, $locale);
+		$expectedCurrency = $expectedCurrency ?? $this->context->getCurrencyResolver()->resolveCode($locale);
 		if ($currentCurrency === null) {
 			$currentCurrency = self::LOCALE_CURRENCY[$this->localization->getDefaultLocale()]
 				?? throw new \InvalidArgumentException('Base currency does not exist.');

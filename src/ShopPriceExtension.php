@@ -13,9 +13,6 @@ final class ShopPriceExtension extends CompilerExtension
 	{
 		$builder = $this->getContainerBuilder();
 
-		$builder->addDefinition($this->prefix('currencyResolver'))
-			->setFactory(CurrencyResolver::class);
-
 		$builder->addDefinition($this->prefix('priceRenderer'))
 			->setFactory(PriceRenderer::class);
 	}
