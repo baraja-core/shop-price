@@ -26,7 +26,7 @@ final class PriceRenderer implements PriceRendererInterface
 
 	public function __construct(
 		private Localization $localization,
-		private CurrencyExchangeRateManager $currencyManager,
+		private CurrencyExchangeRateManager $exchangeRateManager,
 		private CurrencyResolver $currencyResolver,
 		private int $decimals = 2,
 	) {
@@ -53,7 +53,7 @@ final class PriceRenderer implements PriceRendererInterface
 			$currentCurrency = self::LOCALE_CURRENCY[$this->localization->getDefaultLocale()]
 				?? throw new \InvalidArgumentException('Base currency does not exist.');
 		}
-		$converted = $this->currencyManager->getPrice($value, $expectedCurrency, $currentCurrency, true);
+		$converted = $this->exchangeRateManager->getPrice($value, $expectedCurrency, $currentCurrency, true);
 		if (abs($converted) < 1e-10) { // is zero?
 			return $this->getFreeLabel();
 		}
