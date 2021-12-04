@@ -7,7 +7,6 @@ namespace Baraja\Shop\Price;
 
 use Baraja\CurrencyExchangeRate\CurrencyExchangeRateManager;
 use Baraja\Localization\Localization;
-use Nette\Utils\Floats;
 
 final class PriceRenderer implements PriceRendererInterface
 {
@@ -35,20 +34,27 @@ final class PriceRenderer implements PriceRendererInterface
 
 
 	public function render(
-		float|string $price,
+		Price|float|string $price,
 		?string $locale = null,
 		?string $expectedCurrency = null,
 		?string $currentCurrency = null
 	): string {
+		if ($price instanceof Price) {
+			$value = $price->getValue();
+			if ($expectedCurrency === null) {
+				$expectedCurrency = $price->getCurrency()->getCode();
+			}
+		} else {
+			$value = $price;
+		}
 		$locale ??= $this->localization->getLocale();
 		$expectedCurrency = $this->currencyResolver->getCurrency($expectedCurrency, $locale);
 		if ($currentCurrency === null) {
 			$currentCurrency = self::LOCALE_CURRENCY[$this->localization->getDefaultLocale()]
 				?? throw new \InvalidArgumentException('Base currency does not exist.');
 		}
-
-		$converted = $this->currencyManager->getPrice($price, $expectedCurrency, $currentCurrency, true);
-		if (Floats::isZero($converted)) {
+		$converted = $this->currencyManager->getPrice($value, $expectedCurrency, $currentCurrency, true);
+		if (abs($converted) < 1e-10) { // is zero?
 			return $this->getFreeLabel();
 		}
 

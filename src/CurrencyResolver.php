@@ -19,10 +19,16 @@ final class CurrencyResolver
 	{
 		$locale ??= $this->localization->getLocale();
 
-		return $expected
+		$return = $expected
 			?? $this->getSessionValue() // resolve by session
 			?? PriceRenderer::LOCALE_CURRENCY[$locale] // use default by locale
-			?? throw new \InvalidArgumentException('Expected currency does not exist.');
+			?? null;
+
+		if ($return === null) {
+			throw new \InvalidArgumentException('Expected currency does not exist.');
+		}
+
+		return $return;
 	}
 
 
@@ -30,7 +36,7 @@ final class CurrencyResolver
 	{
 		$currency = strtoupper($currency);
 		if (\in_array($currency, array_values(PriceRenderer::LOCALE_CURRENCY), true) === false) {
-			throw new \InvalidArgumentException('Currency "' . $currency . '" is not supported now.');
+			throw new \InvalidArgumentException(sprintf('Currency "%s" is not supported now.', $currency));
 		}
 		$this->setSessionValue($currency);
 	}
