@@ -49,7 +49,7 @@ final class PriceRenderer implements PriceRendererInterface
 			$value = $price;
 		}
 		$locale ??= $this->localization->getLocale();
-		$expectedCurrency = $expectedCurrency ?? $this->context->getCurrencyResolver()->resolveCode($locale);
+		$expectedCurrency ??= $this->context->getCurrencyResolver()->resolveCode($locale);
 		if ($currentCurrency === null) {
 			$currentCurrency = self::LOCALE_CURRENCY[$this->localization->getDefaultLocale()]
 				?? throw new \InvalidArgumentException('Base currency does not exist.');
