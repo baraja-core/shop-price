@@ -6,6 +6,7 @@ namespace Baraja\Shop\Price;
 
 
 use Baraja\CurrencyExchangeRate\CurrencyExchangeRateManager;
+use Baraja\EcommerceStandard\DTO\PriceInterface;
 use Baraja\Localization\Localization;
 use Baraja\Shop\Context;
 
@@ -35,12 +36,12 @@ final class PriceRenderer implements PriceRendererInterface
 
 
 	public function render(
-		Price|float|string $price,
+		PriceInterface|float|string $price,
 		?string $locale = null,
 		?string $expectedCurrency = null,
 		?string $currentCurrency = null
 	): string {
-		if ($price instanceof Price) {
+		if ($price instanceof PriceInterface) {
 			$value = $price->getValue();
 			if ($expectedCurrency === null) {
 				$expectedCurrency = $price->getCurrency()->getCode();

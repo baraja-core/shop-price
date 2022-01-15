@@ -5,20 +5,27 @@ declare(strict_types=1);
 namespace Baraja\Shop\Price;
 
 
-use Baraja\Shop\Entity\Currency\Currency;
+use Baraja\EcommerceStandard\DTO\CurrencyInterface;
+use Baraja\EcommerceStandard\DTO\PriceInterface;
 
-class Price implements \Stringable
+class Price implements PriceInterface
 {
 	public function __construct(
 		private float $value,
-		private Currency $currency,
+		private CurrencyInterface $currency,
 	) {
 	}
 
 
 	public function __toString(): string
 	{
-		return $this->formatPrice($this->getValue()) . ' ' . $this->getCurrency()->getSymbol();
+		return $this->render();
+	}
+
+
+	public function render(bool $html = false): string
+	{
+		return $this->currency->renderPrice($this->getValue(), $html);
 	}
 
 
@@ -28,7 +35,7 @@ class Price implements \Stringable
 	}
 
 
-	public function getCurrency(): Currency
+	public function getCurrency(): CurrencyInterface
 	{
 		return $this->currency;
 	}
@@ -40,7 +47,7 @@ class Price implements \Stringable
 	}
 
 
-	public function getDiff(self|float $price): float
+	public function getDiff(PriceInterface|float $price): float
 	{
 		if ($price instanceof self) {
 			$value = $price->getValue();
@@ -67,11 +74,5 @@ class Price implements \Stringable
 	public function isEqual(self|float $price): bool
 	{
 		return $this->getDiff($price) < 0.0001;
-	}
-
-
-	private function formatPrice(float $price): string
-	{
-		return str_replace(',00', '', number_format($price, 2, ',', ' '));
 	}
 }
