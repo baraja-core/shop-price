@@ -13,6 +13,6 @@ interface PriceRendererInterface
 		PriceInterface|float|string $price,
 		?string $locale = null,
 		?string $expectedCurrency = null,
-		?string $currentCurrency = null
+		?string $currentCurrency = null,
 	): string;
 }
