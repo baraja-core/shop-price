@@ -10,10 +10,42 @@ use Baraja\EcommerceStandard\DTO\PriceInterface;
 
 class Price implements PriceInterface
 {
+	/** @var numeric-string */
+	private string $value;
+
+
 	public function __construct(
-		private float $value,
+		string|int|float|PriceInterface $value,
 		private CurrencyInterface $currency,
 	) {
+		if ($value instanceof PriceInterface) {
+			if ($value->getCurrency()->getCode() !== $currency->getCode()) {
+				throw new \InvalidArgumentException(
+					sprintf('Given price value is not compatible, because different currencies given.')
+				);
+			}
+			$value = $value->getValue();
+		} elseif (is_string($value)) {
+			$value = self::normalize($value);
+		} else {
+			$value = (string) $value;
+		}
+		$this->value = $value;
+	}
+
+
+	/**
+	 * @param numeric-string $value
+	 * @return numeric-string
+	 */
+	public static function normalize(string $value, int $precision = 2): string
+	{
+		$value = $value === '' ? '0' : $value;
+		$parts = explode('.', $value, $precision);
+		$left = ltrim($parts[0] ?? '', '0');
+		$right = rtrim(substr($parts[1] ?? '', 0, 2), '0');
+
+		return $left . ($right !== '' ? '.' . $right : '');
 	}
 
 
@@ -29,7 +61,8 @@ class Price implements PriceInterface
 	}
 
 
-	public function getValue(): float
+	/** @return numeric-string */
+	public function getValue(): string
 	{
 		return $this->value;
 	}
@@ -43,36 +76,63 @@ class Price implements PriceInterface
 
 	public function isFree(): bool
 	{
-		return abs($this->value) < 0.0001;
+		return $this->value === '0';
 	}
 
 
-	public function getDiff(PriceInterface|float $price): float
+	public function getDiff(PriceInterface|string $price): string
 	{
-		if ($price instanceof self) {
+		if ($price instanceof PriceInterface) {
+			$this->checkCurrency($price);
 			$value = $price->getValue();
 		} else {
 			$value = $price;
 		}
 
-		return $this->getValue() - $value;
+		return bcsub($this->value, $value, 2);
 	}
 
 
-	public function isBigger(self|float $price): bool
+	public function isBiggerThan(PriceInterface|string $price): bool
 	{
 		return $this->getDiff($price) > 0.01;
 	}
 
 
-	public function isSmaller(self|float $price): bool
+	public function isSmallerThan(PriceInterface|string $price): bool
 	{
 		return $this->getDiff($price) < 0.01;
 	}
 
 
-	public function isEqual(self|float $price): bool
+	public function isEqualTo(PriceInterface|string $price): bool
 	{
 		return $this->getDiff($price) < 0.0001;
+	}
+
+
+	public function plus(PriceInterface $price): PriceInterface
+	{
+		$this->checkCurrency($price);
+
+		return new self(bcadd($this->value, $price->getValue(), 2), $price->getCurrency());
+	}
+
+
+	public function minus(PriceInterface $price): PriceInterface
+	{
+		$this->checkCurrency($price);
+
+		return new self(bcsub($this->value, $price->getValue(), 2), $price->getCurrency());
+	}
+
+
+	private function checkCurrency(PriceInterface $price): void
+	{
+		if ($price->getCurrency()->getCode() !== $this->currency->getCode()) {
+			throw new \InvalidArgumentException(
+				sprintf('Given price value is not compatible, because different currencies given.')
+			);
+		}
 	}
 }
