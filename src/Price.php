@@ -20,12 +20,11 @@ class Price implements PriceInterface
 	) {
 		if ($value instanceof PriceInterface) {
 			if ($value->getCurrency()->getCode() !== $currency->getCode()) {
-				throw new \InvalidArgumentException(
-					sprintf('Given price value is not compatible, because different currencies given.')
-				);
+				throw new \InvalidArgumentException(sprintf('Given price value is not compatible, because different currencies given.'));
 			}
 			$value = $value->getValue();
 		} elseif (is_string($value)) {
+			assert(is_numeric($value));
 			$value = self::normalize($value);
 		} else {
 			$value = (string) $value;
@@ -40,12 +39,16 @@ class Price implements PriceInterface
 	 */
 	public static function normalize(string $value, int $precision = 2): string
 	{
+		/** @phpstan-ignore-next-line */
 		$value = $value === '' ? '0' : $value;
 		$parts = explode('.', $value, $precision);
 		$left = ltrim($parts[0] ?? '', '0');
 		$right = rtrim(substr($parts[1] ?? '', 0, 2), '0');
 
-		return $left . ($right !== '' ? '.' . $right : '');
+		$return = $left . ($right !== '' ? '.' . $right : '');
+		assert(is_numeric($return));
+
+		return $return;
 	}
 
 
@@ -130,9 +133,7 @@ class Price implements PriceInterface
 	private function checkCurrency(PriceInterface $price): void
 	{
 		if ($price->getCurrency()->getCode() !== $this->currency->getCode()) {
-			throw new \InvalidArgumentException(
-				sprintf('Given price value is not compatible, because different currencies given.')
-			);
+			throw new \InvalidArgumentException(sprintf('Given price value is not compatible, because different currencies given.'));
 		}
 	}
 }
