@@ -43,6 +43,7 @@ class Price implements PriceInterface
 		$value = $value === '' ? '0' : $value;
 		$parts = explode('.', $value, $precision);
 		$left = ltrim($parts[0] ?? '', '0');
+		$left = $left === '' ? '0' : $left;
 		$right = rtrim(substr($parts[1] ?? '', 0, 2), '0');
 
 		$return = $left . ($right !== '' ? '.' . $right : '');
