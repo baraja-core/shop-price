@@ -42,11 +42,12 @@ class Price implements PriceInterface
 		/** @phpstan-ignore-next-line */
 		$value = $value === '' ? '0' : $value;
 		$parts = explode('.', $value, $precision);
-		$left = ltrim($parts[0] ?? '', '0');
-		$left = $left === '' ? '0' : $left;
-		$right = rtrim(substr($parts[1] ?? '', 0, 2), '0');
-
-		$return = $left . ($right !== '' ? '.' . $right : '');
+		$left = ltrim($parts[0], '0');
+		$return = $left === '' ? '0' : $left;
+		if (isset($parts[1])) { // decimal
+			$right = rtrim(substr($parts[1], 0, 2), '0');
+			$return .= $right !== '' ? '.' . $right : '';
+		}
 		assert(is_numeric($return));
 
 		return $return;
