@@ -5,32 +5,20 @@ declare(strict_types=1);
 namespace Baraja\Shop\Price;
 
 
-use Baraja\CurrencyExchangeRate\CurrencyExchangeRateManager;
 use Baraja\EcommerceStandard\DTO\PriceInterface;
+use Baraja\EcommerceStandard\Service\PriceRendererInterface;
 use Baraja\Localization\Localization;
 use Baraja\Shop\Context;
+use Baraja\Shop\Currency\CurrencyManagerAccessor;
+use Baraja\Shop\Currency\ExchangeRateConvertor;
 
 final class PriceRenderer implements PriceRendererInterface
 {
-	public const SYMBOL_MAP = [
-		'EUR' => '€',
-		'GBP' => '£',
-		'PLN' => 'zł',
-	];
-
-	public const LOCALE_CURRENCY = [
-		'cs' => 'CZK',
-		'sk' => 'EUR',
-		'en' => 'EUR',
-		'de' => 'EUR',
-	];
-
-
 	public function __construct(
 		private Localization $localization,
-		private CurrencyExchangeRateManager $exchangeRateManager,
+		private ExchangeRateConvertor $exchangeRateConvertor,
+		private CurrencyManagerAccessor $currencyManager,
 		private Context $context,
-		private int $decimals = 2,
 	) {
 	}
 
@@ -38,55 +26,35 @@ final class PriceRenderer implements PriceRendererInterface
 	public function render(
 		PriceInterface|float|string $price,
 		?string $locale = null,
-		?string $expectedCurrency = null,
-		?string $currentCurrency = null,
+		?string $target = null,
+		?string $source = null,
 	): string {
 		if ($price instanceof PriceInterface) {
 			$value = $price->getValue();
-			if ($expectedCurrency === null) {
-				$expectedCurrency = $price->getCurrency()->getCode();
+			if ($source === null) {
+				$source = $price->getCurrency()->getCode();
 			}
 		} else {
-			$value = $price;
+			$value = (string) $price;
 		}
 		$locale ??= $this->localization->getLocale();
-		$expectedCurrency ??= $this->context->getCurrencyResolver()->resolveCode($locale);
-		if ($currentCurrency === null) {
-			$currentCurrency = self::LOCALE_CURRENCY[$this->localization->getDefaultLocale()]
-				?? throw new \InvalidArgumentException('Base currency does not exist.');
+		$target ??= $this->context->getCurrencyResolver()->resolveCode($locale);
+		if ($source === null) {
+			$source = $this->currencyManager->get()->getMainCurrency()->getCode();
 		}
-		$converted = $this->exchangeRateManager->getPrice($value, $expectedCurrency, $currentCurrency, true);
-		if (abs($converted) < 1e-10) { // is zero?
+		$converted = new Price(
+			value: $this->exchangeRateConvertor->convert($value, $target, $source),
+			currency: $this->currencyManager->get()->getCurrency($source),
+		);
+		if ($converted->isFree()) {
 			return $this->getFreeLabel();
 		}
 
-		$return = number_format($converted, $this->decimals, '.', ' ');
-		if (preg_match('/^(\d*)\.(\d*)$/', $return, $match) === 1) {
-			$right = rtrim($match[2], '0');
-			$return = ($match[1] === '' ? '0' : $match[1]) . ($right !== '' ? '.' . $right : '');
-		}
-
-		return $return . '&nbsp;' . $this->renderSymbol($locale, $expectedCurrency);
+		return $converted->render(true);
 	}
 
 
-	private function renderSymbol(string $locale, string $currency): string
-	{
-		if ($locale === 'cs' && $currency === 'CZK') {
-			return 'Kč';
-		}
-		if (isset(self::SYMBOL_MAP[$currency])) {
-			return self::SYMBOL_MAP[$currency];
-		}
-		if (\in_array($currency, ['USD', 'AUD', 'HKD', 'CAD', 'NZD', 'SGD'], true)) {
-			return '$';
-		}
-
-		return $currency;
-	}
-
-
-	private function getFreeLabel(): string
+	public function getFreeLabel(): string
 	{
 		return 'Zdarma';
 	}
