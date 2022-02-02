@@ -37,7 +37,10 @@ final class PriceRenderer implements PriceRendererInterface
 			if ($source === null) {
 				$source = $price->getCurrency()->getCode();
 			}
+		} elseif (is_string($price)) {
+			$value = $price;
 		} else {
+			trigger_error('Float price is deprecated. Please use numeric-string instead.', \E_USER_DEPRECATED);
 			$value = (string) $price;
 		}
 		$locale ??= $this->localization->getLocale();
