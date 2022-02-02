@@ -23,6 +23,9 @@ final class PriceRenderer implements PriceRendererInterface
 	}
 
 
+	/**
+	 * @param PriceInterface|float|numeric-string $price
+	 */
 	public function render(
 		PriceInterface|float|string $price,
 		?string $locale = null,
