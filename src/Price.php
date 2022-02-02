@@ -112,7 +112,7 @@ class Price implements PriceInterface
 
 	public function isEqualTo(PriceInterface|string $price): bool
 	{
-		return $this->getDiff($price) < 0.0001;
+		return abs((float) $this->getDiff($price)) < 0.0001;
 	}
 
 
