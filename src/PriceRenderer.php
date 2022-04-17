@@ -7,10 +7,10 @@ namespace Baraja\Shop\Price;
 
 use Baraja\EcommerceStandard\DTO\PriceInterface;
 use Baraja\EcommerceStandard\Service\CurrencyManagerInterface;
+use Baraja\EcommerceStandard\Service\CurrencyResolverInterface;
 use Baraja\EcommerceStandard\Service\ExchangeRateConvertorInterface;
 use Baraja\EcommerceStandard\Service\PriceRendererInterface;
 use Baraja\Localization\Localization;
-use Baraja\Shop\Context;
 
 final class PriceRenderer implements PriceRendererInterface
 {
@@ -18,7 +18,7 @@ final class PriceRenderer implements PriceRendererInterface
 		private Localization $localization,
 		private ExchangeRateConvertorInterface $exchangeRateConvertor,
 		private CurrencyManagerInterface $currencyManager,
-		private Context $context,
+		private CurrencyResolverInterface $currencyResolver,
 	) {
 	}
 
@@ -44,7 +44,7 @@ final class PriceRenderer implements PriceRendererInterface
 			$value = (string) $price;
 		}
 		$locale ??= $this->localization->getLocale();
-		$target ??= $this->context->getCurrencyResolver()->resolveCode($locale);
+		$target ??= $this->currencyResolver->resolveCode($locale);
 		if ($source === null) {
 			$source = $this->currencyManager->getMainCurrency()->getCode();
 		}
