@@ -18,7 +18,7 @@ final class PriceRenderer implements PriceRendererInterface
 		private Localization $localization,
 		private ExchangeRateConvertorInterface $exchangeRateConvertor,
 		private CurrencyManagerInterface $currencyManager,
-		private CurrencyResolverInterface $currencyResolver,
+		private ?CurrencyResolverInterface $currencyResolver = null,
 	) {
 	}
 
@@ -32,6 +32,12 @@ final class PriceRenderer implements PriceRendererInterface
 		?string $target = null,
 		?string $source = null,
 	): string {
+		if ($this->currencyResolver === null) {
+			throw new \LogicException(sprintf(
+				'Currency resolver (implementing "%s") not found.',
+				CurrencyResolverInterface::class,
+			));
+		}
 		if ($price instanceof PriceInterface) {
 			$value = $price->getValue();
 			if ($source === null) {
